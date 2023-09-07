@@ -2,10 +2,13 @@
 name = "lexa-fs"
 version = "0.1.0"
 edition = "2021"
+license = "MPL-2.0"
+repository = "https://github.com/PhiSyX/lexa-fs"
+description = "Utilitaires liés au fs pour les projets."
 
 [dependencies]
-lexa-env = { git = "https://github.com/PhiSyX/lexa-env.git" }
-lexa-prompt = { git = "https://github.com/PhiSyX/lexa-prompt.git" }
+lexa-env = { version = "^0.1" }
+lexa-prompt = { version = "^0.1" }
 
 log = { version = "^0.4" }
 serde = { version = "^1.0", features = ["derive"] }
