@@ -15,6 +15,8 @@
 // ┃  file, You can obtain one at https://mozilla.org/MPL/2.0/.                ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
+use std::{fmt, str};
+
 // ----------- //
 // Énumération //
 // ----------- //
@@ -37,7 +39,7 @@ pub enum Extension {
 // Implémentation // -> Interface
 // -------------- //
 
-impl std::str::FromStr for Extension {
+impl str::FromStr for Extension {
 	type Err = &'static str;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -50,5 +52,17 @@ impl std::str::FromStr for Extension {
 				return Err("Extension de fichier dé-sérialisable non valide")
 			}
 		})
+	}
+}
+
+impl fmt::Display for Extension {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		let extension = match self {
+			| Extension::ENV => "env",
+			| Extension::JSON => "json",
+			| Extension::TOML => "toml",
+			| Extension::YAML => "yml",
+		};
+		write!(f, "{}", extension)
 	}
 }

@@ -33,27 +33,28 @@ use crate::Extension;
 pub fn load_or_prompt<T>(
 	directory: impl AsRef<path::Path>,
 	filename: impl fmt::Display,
-	extension: impl fmt::Display,
+	extension: impl Into<Extension>,
 ) -> io::Result<T>
 where
 	T: fmt::Debug,
 	T: serde::Serialize + serde::de::DeserializeOwned,
 	T: lexa_prompt::Prompt,
 {
+	let extension = extension.into();
 	let fullpath = path::Path::new(directory.as_ref())
 		.join(format!("{filename}.{extension}"));
 
 	if !fullpath.exists() {
-		return save(extension, fullpath);
+		return save(fullpath, extension);
 	}
 
 	crate::load(directory, filename, &extension)
-		.or_else(|_| save(extension, fullpath))
+		.or_else(|_| save(fullpath, extension))
 }
 
 fn save<T>(
-	extension: impl fmt::Display,
 	fullpath: impl AsRef<path::Path>,
+	extension: impl Into<Extension>,
 ) -> io::Result<T>
 where
 	T: fmt::Debug,
@@ -72,7 +73,9 @@ where
 	);
 	println!();
 
-	let data = T::prompt()?;
+	let data = T::prompt().map_err(|err| {
+		io::Error::new(io::ErrorKind::InvalidData, err.to_string())
+	})?;
 
 	log::debug!("  Les données du formulaire sont\n{:#?}", &data);
 
@@ -80,6 +83,7 @@ where
 		"Sauvegarder le résultat dans « {} »",
 		style(fullpath.as_ref().display()).yellow()
 	)) {
+		let extension = extension.into();
 		let mut fd = std::fs::File::create(fullpath)?;
 		let content = match extension.to_string().parse::<Extension>() {
 			| Ok(Extension::JSON) => {
