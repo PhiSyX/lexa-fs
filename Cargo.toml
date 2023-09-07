@@ -1,0 +1,15 @@
+[package]
+name = "lexa-fs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lexa-env = { git = "https://github.com/PhiSyX/lexa-env.git" }
+lexa-prompt = { git = "https://github.com/PhiSyX/lexa-prompt.git" }
+
+log = { version = "^0.4" }
+serde = { version = "^1.0", features = ["derive"] }
+serde_json = { version = "^1.0" }
+serde_yaml = { version = "^0.9" }
+serde_toml = { version = "^0.7", package = "toml" }
+console = { version = "^0.15" }
