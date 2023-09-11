@@ -15,12 +15,22 @@
 // ┃  file, You can obtain one at https://mozilla.org/MPL/2.0/.                ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-mod extension;
-mod load;
-mod load_or_default;
-mod load_or_prompt;
+use std::{fmt, path};
 
-pub use self::extension::Extension;
-pub use self::load::load;
-pub use self::load_or_default::load_or_default;
-pub use self::load_or_prompt::load_or_prompt;
+// -------- //
+// Fonction //
+// -------- //
+
+/// Charge un fichier à partir d'un dossier, et le dé-sérialise en un type donné
+/// par générique ou retourne une valeur par défaut du générique.
+pub fn load_or_default<T>(
+	directory: impl AsRef<path::Path>,
+	filename: impl fmt::Display,
+	extension: impl fmt::Display,
+) -> T
+where
+	T: serde::de::DeserializeOwned,
+	T: Default,
+{
+	super::load(directory, filename, extension).unwrap_or_default()
+}
