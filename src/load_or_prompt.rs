@@ -72,29 +72,37 @@ where
 
 	log::debug!("  Les données du formulaire sont\n{:#?}", &data);
 
-	if lexa_prompt::confirm(format!(
+	if !lexa_prompt::confirm(format!(
 		"Sauvegarder le résultat dans « {} »",
 		style(fullpath.as_ref().display()).yellow()
 	)) {
-		let extension = extension.into();
-		let mut fd = std::fs::File::create(fullpath)?;
-		let content = match extension.to_string().parse::<Extension>() {
-			| Ok(Extension::JSON) => {
-				serde_json::to_string_pretty(&data)
-					.map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
-			}
-			| Ok(Extension::TOML) => {
-				serde_toml::to_string_pretty(&data)
-					.map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
-			}
-			| Ok(Extension::YAML) => {
-				serde_yaml::to_string(&data)
-					.map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
-			}
-			| _ => unimplemented!(),
-		};
-		write!(fd, "{}", content)?;
+		return Ok(data);
 	}
+
+	let extension = extension.into();
+
+	let mut fd = std::fs::File::create(fullpath)?;
+
+	let content = match extension.to_string().parse() {
+		| Ok(Extension::JSON) => {
+			serde_json::to_string_pretty(&data)
+				.map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
+		}
+
+		| Ok(Extension::TOML) => {
+			serde_toml::to_string_pretty(&data)
+				.map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
+		}
+
+		| Ok(Extension::YAML) => {
+			serde_yaml::to_string(&data)
+				.map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
+		}
+
+		| _ => unimplemented!(),
+	};
+
+	write!(fd, "{}", content)?;
 
 	Ok(data)
 }

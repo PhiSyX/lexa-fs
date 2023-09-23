@@ -33,16 +33,19 @@ pub enum Extension {
 // -------------- //
 
 impl str::FromStr for Extension {
-	type Err = &'static str;
+	type Err = String;
 
-	fn from_str(s: &str) -> Result<Self, Self::Err> {
-		Ok(match s {
+	fn from_str(extension: &str) -> Result<Self, Self::Err> {
+		Ok(match extension {
+			// NOTE: fichier .env (.env.local, .env.developement, .env.test)
 			| "" | "local" | "development" | "test" => Self::ENV,
 			| "json" => Self::JSON,
 			| "toml" => Self::TOML,
 			| "yml" | "yaml" => Self::YAML,
 			| _ => {
-				return Err("Extension de fichier dé-sérialisable non valide")
+				return Err(format!(
+					"L'extension de fichier « {extension} » n'est pas valide"
+				))
 			}
 		})
 	}
