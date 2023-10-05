@@ -83,23 +83,23 @@ where
 
 	let mut fd = std::fs::File::create(fullpath)?;
 
-	let content = match extension.to_string().parse() {
-		| Ok(Extension::JSON) => {
+	let content = match extension {
+		| Extension::JSON => {
 			serde_json::to_string_pretty(&data)
 				.map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
 		}
 
-		| Ok(Extension::TOML) => {
+		| Extension::TOML => {
 			serde_toml::to_string_pretty(&data)
 				.map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
 		}
 
-		| Ok(Extension::YAML) => {
+		| Extension::YAML => {
 			serde_yaml::to_string(&data)
 				.map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
 		}
 
-		| _ => unimplemented!(),
+		| _ => unreachable!(),
 	};
 
 	write!(fd, "{}", content)?;
