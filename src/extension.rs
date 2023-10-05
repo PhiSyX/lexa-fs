@@ -14,9 +14,11 @@ use std::{fmt, str};
 // Énumération //
 // ----------- //
 
+#[derive(Debug)]
+#[derive(Copy, Clone)]
+#[derive(PartialEq, Eq)]
 /// Extensions de fichiers supportées par les fonctions [load()] et
 /// [load_or_prompt()].
-#[derive(Debug)]
 pub enum Extension {
 	/// Correspond aux extensions de fichiers `.local`, `.development`, `.test`
 	ENV,
@@ -37,7 +39,7 @@ impl str::FromStr for Extension {
 
 	fn from_str(extension: &str) -> Result<Self, Self::Err> {
 		Ok(match extension {
-			// NOTE: fichier .env (.env.local, .env.developement, .env.test)
+			// NOTE: fichier .env (.env.local, .env.development, .env.test)
 			| "" | "local" | "development" | "test" => Self::ENV,
 			| "json" => Self::JSON,
 			| "toml" => Self::TOML,
