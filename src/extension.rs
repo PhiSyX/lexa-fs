@@ -17,9 +17,10 @@ use std::{fmt, str};
 #[derive(Debug)]
 #[derive(Copy, Clone)]
 #[derive(PartialEq, Eq)]
-/// Extensions de fichiers supportées par les fonctions [load()] et
-/// [load_or_prompt()].
-pub enum Extension {
+/// Extensions de fichiers supportées par les fonctions [crate::load()] et
+/// [crate::load_or_prompt()].
+pub enum Extension
+{
 	/// Correspond aux extensions de fichiers `.local`, `.development`, `.test`
 	ENV,
 	/// Correspond à l'extension de fichier `.json`
@@ -34,27 +35,27 @@ pub enum Extension {
 // Implémentation // -> Interface
 // -------------- //
 
-impl str::FromStr for Extension {
+impl str::FromStr for Extension
+{
 	type Err = String;
 
-	fn from_str(extension: &str) -> Result<Self, Self::Err> {
+	fn from_str(extension: &str) -> Result<Self, Self::Err>
+	{
 		Ok(match extension {
 			// NOTE: fichier .env (.env.local, .env.development, .env.test)
 			| "" | "local" | "development" | "test" => Self::ENV,
 			| "json" => Self::JSON,
 			| "toml" => Self::TOML,
 			| "yml" | "yaml" => Self::YAML,
-			| _ => {
-				return Err(format!(
-					"L'extension de fichier « {extension} » n'est pas valide"
-				))
-			}
+			| _ => return Err(format!("L'extension de fichier « {extension} » n'est pas valide")),
 		})
 	}
 }
 
-impl fmt::Display for Extension {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl fmt::Display for Extension
+{
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+	{
 		let extension = match self {
 			| Extension::ENV => "env",
 			| Extension::JSON => "json",

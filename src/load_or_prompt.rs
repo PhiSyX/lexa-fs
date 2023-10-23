@@ -13,6 +13,7 @@ use std::{fmt, io, path};
 
 use console::style;
 
+use crate::error::mapped_to_io_other_err;
 use crate::Extension;
 
 // -------- //
@@ -34,21 +35,17 @@ where
 	T: lexa_prompt::Prompt,
 {
 	let extension = extension.into();
-	let fullpath = path::Path::new(directory.as_ref())
-		.join(format!("{filename}.{extension}"));
+
+	let fullpath = path::Path::new(directory.as_ref()).join(format!("{filename}.{extension}"));
 
 	if !fullpath.exists() {
 		return save(fullpath, extension);
 	}
 
-	crate::load(directory, filename, &extension)
-		.or_else(|_| save(fullpath, extension))
+	crate::load(directory, filename, extension).or_else(|_| save(fullpath, extension))
 }
 
-fn save<T>(
-	fullpath: impl AsRef<path::Path>,
-	extension: impl Into<Extension>,
-) -> io::Result<T>
+fn save<T>(fullpath: impl AsRef<path::Path>, extension: Extension) -> io::Result<T>
 where
 	T: fmt::Debug,
 	T: serde::Serialize + serde::de::DeserializeOwned,
@@ -66,9 +63,7 @@ where
 	);
 	println!();
 
-	let data = T::prompt().map_err(|err| {
-		io::Error::new(io::ErrorKind::InvalidData, err.to_string())
-	})?;
+	let data = T::prompt().map_err(|err| io::Error::new(io::ErrorKind::InvalidData, err.to_string()))?;
 
 	log::debug!("  Les données du formulaire sont\n{:#?}", &data);
 
@@ -79,26 +74,12 @@ where
 		return Ok(data);
 	}
 
-	let extension = extension.into();
-
 	let mut fd = std::fs::File::create(fullpath)?;
 
 	let content = match extension {
-		| Extension::JSON => {
-			serde_json::to_string_pretty(&data)
-				.map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
-		}
-
-		| Extension::TOML => {
-			serde_toml::to_string_pretty(&data)
-				.map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
-		}
-
-		| Extension::YAML => {
-			serde_yaml::to_string(&data)
-				.map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
-		}
-
+		| Extension::JSON => serde_json::to_string_pretty(&data).map_err(mapped_to_io_other_err)?,
+		| Extension::TOML => serde_toml::to_string_pretty(&data).map_err(mapped_to_io_other_err)?,
+		| Extension::YAML => serde_yaml::to_string(&data).map_err(mapped_to_io_other_err)?,
 		| _ => unreachable!(),
 	};
 

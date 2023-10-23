@@ -8,13 +8,20 @@
 // ┃  file, You can obtain one at https://mozilla.org/MPL/2.0/.                ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-mod error;
-mod extension;
-mod load;
-mod load_or_default;
-mod load_or_prompt;
+use std::io;
 
-pub use self::extension::Extension;
-pub use self::load::load;
-pub use self::load_or_default::load_or_default;
-pub use self::load_or_prompt::load_or_prompt;
+// -------- //
+// Fonction //
+// -------- //
+
+#[inline]
+pub(crate) fn mapped_to_io_invalid_data_err(err: impl std::error::Error + Send + Sync + 'static) -> io::Error
+{
+	io::Error::new(io::ErrorKind::InvalidData, err)
+}
+
+#[inline]
+pub(crate) fn mapped_to_io_other_err(err: impl std::error::Error + Send + Sync + 'static) -> io::Error
+{
+	io::Error::new(io::ErrorKind::Other, err)
+}
