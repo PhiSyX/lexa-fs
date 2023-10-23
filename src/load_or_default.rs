@@ -10,6 +10,8 @@
 
 use std::{fmt, path};
 
+use crate::Extension;
+
 // -------- //
 // Fonction //
 // -------- //
@@ -19,7 +21,7 @@ use std::{fmt, path};
 pub fn load_or_default<T>(
 	directory: impl AsRef<path::Path>,
 	filename: impl fmt::Display,
-	extension: impl fmt::Display,
+	extension: impl Into<Extension> + fmt::Display,
 ) -> T
 where
 	T: serde::de::DeserializeOwned,

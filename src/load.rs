@@ -10,6 +10,7 @@
 
 use std::{fmt, fs, io, path};
 
+use crate::error::mapped_to_io_invalid_data_err;
 use crate::Extension;
 
 // -------- //
@@ -21,39 +22,32 @@ use crate::Extension;
 pub fn load<T>(
 	directory: impl AsRef<path::Path>,
 	filename: impl fmt::Display,
-	extension: impl fmt::Display,
+	extension: impl Into<Extension> + fmt::Display,
 ) -> io::Result<T>
 where
 	T: serde::de::DeserializeOwned,
 {
-	let fullpath = path::Path::new(directory.as_ref())
-		.join(format!("{filename}.{extension}"));
+	let fullpath = path::Path::new(directory.as_ref()).join(format!("{filename}.{extension}"));
 
-	match extension.to_string().parse::<Extension>() {
-		| Ok(Extension::ENV) => {
+	match extension.into() {
+		| Extension::ENV => {
 			let content = fs::read_to_string(fullpath)?;
-			lexa_env::from_str(&content)
-				.map_err(|err| io::Error::new(io::ErrorKind::Other, err))
+			lexa_env::from_str(&content).map_err(mapped_to_io_invalid_data_err)
 		}
 
-		| Ok(Extension::JSON) => {
+		| Extension::JSON => {
 			let fd = fs::File::open(fullpath)?;
-			serde_json::from_reader(fd)
-				.map_err(|err| io::Error::new(io::ErrorKind::InvalidData, err))
+			serde_json::from_reader(fd).map_err(mapped_to_io_invalid_data_err)
 		}
 
-		| Ok(Extension::TOML) => {
+		| Extension::TOML => {
 			let content = fs::read_to_string(fullpath)?;
-			serde_toml::from_str(&content)
-				.map_err(|err| io::Error::new(io::ErrorKind::InvalidData, err))
+			serde_toml::from_str(&content).map_err(mapped_to_io_invalid_data_err)
 		}
 
-		| Ok(Extension::YAML) => {
+		| Extension::YAML => {
 			let fd = fs::File::open(fullpath)?;
-			serde_yaml::from_reader(fd)
-				.map_err(|err| io::Error::new(io::ErrorKind::InvalidData, err))
+			serde_yaml::from_reader(fd).map_err(mapped_to_io_invalid_data_err)
 		}
-
-		| Err(err) => Err(io::Error::new(io::ErrorKind::InvalidInput, err)),
 	}
 }
