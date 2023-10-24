@@ -8,19 +8,22 @@
 // ┃  file, You can obtain one at https://mozilla.org/MPL/2.0/.                ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-mod copy_dir;
-mod error;
-#[cfg(feature = "explorer")]
-mod explorer;
-mod extension;
-mod load;
-mod load_or_default;
-mod load_or_prompt;
+use std::{io, path};
 
-pub use self::copy_dir::copy_dir;
-pub use self::extension::Extension;
-#[cfg(feature = "explorer")]
-pub use self::explorer::{explorer, explorer_unchecked};
-pub use self::load::load;
-pub use self::load_or_default::load_or_default;
-pub use self::load_or_prompt::load_or_prompt;
+// -------- //
+// Fonction //
+// -------- //
+
+/// Ouvre l'explorer sur le répertorie donné.
+#[inline]
+pub fn explorer(dir: impl AsRef<path::Path>) -> io::Result<()>
+{
+	open::that(dir.as_ref())
+}
+
+/// Ouvre l'explorer sur le répertoire donné, sans traiter les erreurs.
+#[inline]
+pub fn explorer_unchecked(dir: impl AsRef<path::Path>)
+{
+	_ = explorer(dir);
+}
