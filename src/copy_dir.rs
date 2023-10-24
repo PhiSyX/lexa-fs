@@ -8,15 +8,44 @@
 // ┃  file, You can obtain one at https://mozilla.org/MPL/2.0/.                ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-mod copy_dir;
-mod error;
-mod extension;
-mod load;
-mod load_or_default;
-mod load_or_prompt;
+use std::{fs, io, path};
 
-pub use self::copy_dir::copy_dir;
-pub use self::extension::Extension;
-pub use self::load::load;
-pub use self::load_or_default::load_or_default;
-pub use self::load_or_prompt::load_or_prompt;
+// -------- //
+// Fonction //
+// -------- //
+
+/// Copie un répertoire vers une destination.
+pub fn copy_dir(dir: impl AsRef<path::Path>, dest: impl AsRef<path::Path>) -> io::Result<()>
+{
+	let dir = dir.as_ref();
+
+	if !dir.is_dir() {
+		let err = format!(
+			"L'argument `dir` « {} » ne semble pas être un répertoire.",
+			dir.display(),
+		);
+		// FIXME: utiliser la variante [io::ErrorKind::NotADirectory] lorsque ce
+		// sera stable.
+		return Err(io::Error::new(io::ErrorKind::Other, err));
+	}
+
+	let dest = dest.as_ref();
+
+	if !dest.is_dir() {
+		fs::create_dir(dest)?;
+		log::trace!("Le répertoire « {} » a été crée.", dest.display());
+	}
+
+	for from in fs::read_dir(dir)? {
+		let dir_entry  = from?;
+		let file_type = dir_entry.file_type()?;
+
+		if file_type.is_dir() {
+			copy_dir(dir_entry.path(), dest.join(dir_entry.file_name()))?;
+		} else {
+			fs::copy(dir_entry.path(), dest.join(dir_entry.file_name()))?;
+		}
+	}
+
+	Ok(())
+}
